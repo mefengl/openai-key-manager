@@ -86,27 +86,31 @@ function format_data() {
 		NOW=$(date -u +"%s")
 		SECONDS_LEFT=$((VALUES[6] - NOW))
 		DAYS_LEFT=$((SECONDS_LEFT / 86400))
-		echo "Days left until access expires: $DAYS_LEFT"
 
-		TABLE1_HEADERS=("Account Name" "Object" "Has Payment Method" "Canceled" "Access Until" "Days Left"
-			"Plan Title" "Plan ID")
-		TABLE1_DATA=("${VALUES[0]}" "${VALUES[1]}" "${VALUES[2]}" "${VALUES[3]}" "$ACCESS_UNTIL_DATE" "$DAYS_LEFT" "${VALUES[13]}" "${VALUES[14]}")
-		TABLE1_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
-
-		TABLE2_HEADERS=("Soft Limit (USD)" "Hard Limit (USD)" "System Hard Limit (USD)" "Soft Limit" "Hard Limit" "System Hard Limit")
-		TABLE2_DATA=("${VALUES[10]}" "${VALUES[11]}" "${VALUES[12]}" "${VALUES[7]}" "${VALUES[8]}" "${VALUES[9]}")
-		TABLE2_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$CYAN" "$YELLOW" "$BLUE")
-
-		TABLE3_HEADERS=("Canceled At" "Delinquent" "PO Number" "Billing Email" "Tax IDs" "Billing Address" "Business Address")
-		TABLE3_DATA=("${VALUES[4]}" "${VALUES[5]}" "${VALUES[15]}" "${VALUES[16]}" "${VALUES[17]}" "${VALUES[18]}" "${VALUES[19]}")
-		TABLE3_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
-
-		render_table TABLE1_DATA[@] TABLE1_HEADERS[@] TABLE1_COLORS[@]
+		TABLE0_HEADERS=("Plan ID" "System Hard Limit (USD)" "Days Left")
+		TABLE0_DATA=("${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
+		TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE")
+		render_table TABLE0_DATA[@] TABLE0_HEADERS[@] TABLE0_COLORS[@]
 		echo -e "${GREEN}${DIVIDER}${RESET}"
-		render_table TABLE2_DATA[@] TABLE2_HEADERS[@] TABLE2_COLORS[@]
-		echo -e "${GREEN}${DIVIDER}${RESET}"
-		render_table TABLE3_DATA[@] TABLE3_HEADERS[@] TABLE3_COLORS[@]
-		echo -e "${GREEN}${DIVIDER}${RESET}"
+
+		# TABLE1_HEADERS=("Account Name" "Object" "Has Payment Method" "Canceled" "Access Until" "Days Left"
+		# 	"Plan Title" "Plan ID")
+		# TABLE1_DATA=("${VALUES[0]}" "${VALUES[1]}" "${VALUES[2]}" "${VALUES[3]}" "$ACCESS_UNTIL_DATE" "$DAYS_LEFT" "${VALUES[13]}" "${VALUES[14]}")
+		# TABLE1_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
+		# render_table TABLE1_DATA[@] TABLE1_HEADERS[@] TABLE1_COLORS[@]
+		# echo -e "${GREEN}${DIVIDER}${RESET}"
+
+		# TABLE2_HEADERS=("Soft Limit (USD)" "Hard Limit (USD)" "System Hard Limit (USD)" "Soft Limit" "Hard Limit" "System Hard Limit")
+		# TABLE2_DATA=("${VALUES[10]}" "${VALUES[11]}" "${VALUES[12]}" "${VALUES[7]}" "${VALUES[8]}" "${VALUES[9]}")
+		# TABLE2_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$CYAN" "$YELLOW" "$BLUE")
+		# render_table TABLE2_DATA[@] TABLE2_HEADERS[@] TABLE2_COLORS[@]
+		# echo -e "${GREEN}${DIVIDER}${RESET}"
+
+		# TABLE3_HEADERS=("Canceled At" "Delinquent" "PO Number" "Billing Email" "Tax IDs" "Billing Address" "Business Address")
+		# TABLE3_DATA=("${VALUES[4]}" "${VALUES[5]}" "${VALUES[15]}" "${VALUES[16]}" "${VALUES[17]}" "${VALUES[18]}" "${VALUES[19]}")
+		# TABLE3_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
+		# render_table TABLE3_DATA[@] TABLE3_HEADERS[@] TABLE3_COLORS[@]
+		# echo -e "${GREEN}${DIVIDER}${RESET}"
 	done
 }
 
