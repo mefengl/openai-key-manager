@@ -4,7 +4,7 @@ function render_table() {
 	DATA_ARRAY=("${!1}")
 	HEADERS=("${!2}")
 	COLORS=("${!3}")
-	local FORMAT="%-20s"
+	local FORMAT="%-30s"
 
 	for i in "${!HEADERS[@]}"; do
 		printf "${COLORS[i]}${FORMAT}${RESET}" "${HEADERS[i]}"
@@ -87,9 +87,9 @@ function format_data() {
 		SECONDS_LEFT=$((VALUES[6] - NOW))
 		DAYS_LEFT=$((SECONDS_LEFT / 86400))
 
-		TABLE0_HEADERS=("Plan ID" "System Hard Limit (USD)" "Days Left")
-		TABLE0_DATA=("${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
-		TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE")
+		TABLE0_HEADERS=("Account Name" "Plan ID" "Limit (USD)" "Days Left")
+    TABLE0_DATA=("${VALUES[0]}" "${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
+    TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$YELLOW")
 		render_table TABLE0_DATA[@] TABLE0_HEADERS[@] TABLE0_COLORS[@]
 		echo -e "${GREEN}${DIVIDER}${RESET}"
 
