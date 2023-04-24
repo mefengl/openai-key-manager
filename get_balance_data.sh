@@ -4,7 +4,7 @@ function render_table() {
 	DATA_ARRAY=("${!1}")
 	HEADERS=("${!2}")
 	COLORS=("${!3}")
-	local FORMAT="%-30s"
+	local FORMAT="%-18s"
 
 	for i in "${!HEADERS[@]}"; do
 		printf "${COLORS[i]}${FORMAT}${RESET}" "${HEADERS[i]}"
