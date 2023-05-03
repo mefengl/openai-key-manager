@@ -93,25 +93,39 @@ function format_data() {
 		render_table TABLE0_DATA[@] TABLE0_HEADERS[@] TABLE0_COLORS[@]
 		echo -e "${GREEN}${DIVIDER}${RESET}"
 
-		# TABLE1_HEADERS=("Account Name" "Object" "Has Payment Method" "Canceled" "Access Until" "Days Left"
-		# 	"Plan Title" "Plan ID")
-		# TABLE1_DATA=("${VALUES[0]}" "${VALUES[1]}" "${VALUES[2]}" "${VALUES[3]}" "$ACCESS_UNTIL_DATE" "$DAYS_LEFT" "${VALUES[13]}" "${VALUES[14]}")
-		# TABLE1_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
-		# render_table TABLE1_DATA[@] TABLE1_HEADERS[@] TABLE1_COLORS[@]
-		# echo -e "${GREEN}${DIVIDER}${RESET}"
-
-		# TABLE2_HEADERS=("Soft Limit (USD)" "Hard Limit (USD)" "System Hard Limit (USD)" "Soft Limit" "Hard Limit" "System Hard Limit")
-		# TABLE2_DATA=("${VALUES[10]}" "${VALUES[11]}" "${VALUES[12]}" "${VALUES[7]}" "${VALUES[8]}" "${VALUES[9]}")
-		# TABLE2_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$CYAN" "$YELLOW" "$BLUE")
-		# render_table TABLE2_DATA[@] TABLE2_HEADERS[@] TABLE2_COLORS[@]
-		# echo -e "${GREEN}${DIVIDER}${RESET}"
-
-		# TABLE3_HEADERS=("Canceled At" "Delinquent" "PO Number" "Billing Email" "Tax IDs" "Billing Address" "Business Address")
-		# TABLE3_DATA=("${VALUES[4]}" "${VALUES[5]}" "${VALUES[15]}" "${VALUES[16]}" "${VALUES[17]}" "${VALUES[18]}" "${VALUES[19]}")
-		# TABLE3_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$PURPLE" "$GREEN" "$YELLOW" "$BLUE")
-		# render_table TABLE3_DATA[@] TABLE3_HEADERS[@] TABLE3_COLORS[@]
-		# echo -e "${GREEN}${DIVIDER}${RESET}"
 	done
 }
 
 get_balance_data $1
+
+function get_usage_data() {
+	API_KEYS=$1
+	IFS=',' read -ra API_KEY_ARRAY <<<"$API_KEYS"
+
+	if [ -z "$API_KEYS" ]; then
+		echo "Error: Please provide API keys as an argument, separated by commas."
+		return 1
+	fi
+
+	declare -a RESULTS
+	for API_KEY in "${API_KEY_ARRAY[@]}"; do
+		START_DATE=$(date -u -v-100d +"%Y-%m-%d")
+		END_DATE=$(date -u +"%Y-%m-%d")
+		URL="https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE"
+		CONTENT_TYPE="Content-Type: application/json"
+		AUTHORIZATION="Authorization: Bearer $API_KEY"
+
+		RESPONSE=$(curl -s -X GET -H "$CONTENT_TYPE" -H "$AUTHORIZATION" $URL)
+
+		if [ -z "$RESPONSE" ]; then
+			echo "Error: No response received for API key \"$API_KEY\". Please check your API key and try again."
+			RESULTS+=("Error")
+		else
+			RESULTS+=("$RESPONSE")
+		fi
+	done
+
+	echo $(echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2-)
+}
+
+get_usage_data $1
