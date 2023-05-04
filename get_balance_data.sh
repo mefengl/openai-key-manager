@@ -129,3 +129,35 @@ function get_usage_data() {
 }
 
 get_usage_data $1
+
+function get_today_usage_data() {
+	API_KEYS=$1
+	IFS=',' read -ra API_KEY_ARRAY <<<"$API_KEYS"
+
+	if [ -z "$API_KEYS" ]; then
+		echo "Error: Please provide API keys as an argument, separated by commas."
+		return 1
+	fi
+
+	declare -a RESULTS
+	for API_KEY in "${API_KEY_ARRAY[@]}"; do
+		START_DATE=$(date -u +"%Y-%m-%d")
+		END_DATE=$(date -u -v+1d +"%Y-%m-%d")
+		URL="https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE"
+		CONTENT_TYPE="Content-Type: application/json"
+		AUTHORIZATION="Authorization: Bearer $API_KEY"
+
+		RESPONSE=$(curl -s -X GET -H "$CONTENT_TYPE" -H "$AUTHORIZATION" $URL)
+
+		if [ -z "$RESPONSE" ]; then
+			echo "Error: No response received for API key \"$API_KEY\". Please check your API key and try again."
+			RESULTS+=("Error")
+		else
+			RESULTS+=("$RESPONSE")
+		fi
+	done
+
+	echo $(echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2-)
+}
+
+get_today_usage_data $1
