@@ -88,8 +88,8 @@ function format_data() {
 		DAYS_LEFT=$((SECONDS_LEFT / 86400))
 
 		TABLE0_HEADERS=("Account Name" "Plan ID" "Limit (USD)" "Days Left")
-    TABLE0_DATA=("${VALUES[0]}" "${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
-    TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$YELLOW")
+		TABLE0_DATA=("${VALUES[0]}" "${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
+		TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$YELLOW")
 		render_table TABLE0_DATA[@] TABLE0_HEADERS[@] TABLE0_COLORS[@]
 		echo -e "${GREEN}${DIVIDER}${RESET}"
 
@@ -125,7 +125,7 @@ function get_usage_data() {
 		fi
 	done
 
-	echo $(echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2-)
+	echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/'
 }
 
 get_usage_data $1
@@ -157,7 +157,7 @@ function get_today_usage_data() {
 		fi
 	done
 
-	echo $(echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2-)
+	echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/'
 }
 
 get_today_usage_data $1
