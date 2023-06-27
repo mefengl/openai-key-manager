@@ -137,6 +137,7 @@ function get_usage_data() {
 		fi
 	done
 
+	echo -e "\nUsage Data:"
 	TABLE_HEADERS=("API Key No." "Total Usage")
 	TABLE_COLORS=("$CYAN" "$YELLOW")
 	for i in "${!RESULTS[@]}"; do
@@ -176,6 +177,7 @@ function get_today_usage_data() {
 		fi
 	done
 
+	echo -e "\nToday's Usage Data:"
 	TABLE_HEADERS=("API Key No." "Today's Usage")
 	TABLE_COLORS=("$CYAN" "$YELLOW")
 	for i in "${!RESULTS[@]}"; do
