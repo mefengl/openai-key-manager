@@ -19,6 +19,17 @@ function render_table() {
 	done
 }
 
+function print_api_keys() {
+	API_KEYS=$1
+	IFS=',' read -ra API_KEY_ARRAY <<<"$API_KEYS"
+	echo "Your API keys:"
+	for i in "${!API_KEY_ARRAY[@]}"; do
+		echo "$((i + 1)). ${API_KEY_ARRAY[i]}"
+	done
+}
+
+print_api_keys $1
+
 function get_balance_data() {
 	API_KEYS=$1
 	IFS=',' read -ra API_KEY_ARRAY <<<"$API_KEYS"
@@ -62,7 +73,8 @@ function format_data() {
 
 	echo -e "${GREEN}${DIVIDER}${RESET}"
 
-	for DATA in "${RESULTS[@]}"; do
+	for i in "${!RESULTS[@]}"; do
+		DATA="${RESULTS[i]}"
 		if [ "$DATA" == "Error" ]; then
 			echo "Error occurred while retrieving data."
 			continue
@@ -87,12 +99,11 @@ function format_data() {
 		SECONDS_LEFT=$((VALUES[6] - NOW))
 		DAYS_LEFT=$((SECONDS_LEFT / 86400))
 
-		TABLE0_HEADERS=("Account Name" "Plan ID" "Limit (USD)" "Days Left")
-		TABLE0_DATA=("${VALUES[0]}" "${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
+		TABLE0_HEADERS=("API Key No." "Account Name" "Plan ID" "Limit (USD)" "Days Left")
+		TABLE0_DATA=("$((i + 1))" "${VALUES[0]}" "${VALUES[14]}" "${VALUES[12]}" "$DAYS_LEFT")
 		TABLE0_COLORS=("$CYAN" "$YELLOW" "$BLUE" "$YELLOW")
 		render_table TABLE0_DATA[@] TABLE0_HEADERS[@] TABLE0_COLORS[@]
 		echo -e "${GREEN}${DIVIDER}${RESET}"
-
 	done
 }
 
@@ -108,7 +119,8 @@ function get_usage_data() {
 	fi
 
 	declare -a RESULTS
-	for API_KEY in "${API_KEY_ARRAY[@]}"; do
+	for i in "${!API_KEY_ARRAY[@]}"; do
+		API_KEY=${API_KEY_ARRAY[i]}
 		START_DATE=$(date -u -v-100d +"%Y-%m-%d")
 		END_DATE=$(date -u +"%Y-%m-%d")
 		URL="https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE"
@@ -140,7 +152,8 @@ function get_today_usage_data() {
 	fi
 
 	declare -a RESULTS
-	for API_KEY in "${API_KEY_ARRAY[@]}"; do
+	for i in "${!API_KEY_ARRAY[@]}"; do
+		API_KEY=${API_KEY_ARRAY[i]}
 		START_DATE=$(date -u +"%Y-%m-%d")
 		END_DATE=$(date -u -v+1d +"%Y-%m-%d")
 		URL="https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE"
