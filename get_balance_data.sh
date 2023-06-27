@@ -137,7 +137,13 @@ function get_usage_data() {
 		fi
 	done
 
-	echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/'
+	TABLE_HEADERS=("API Key No." "Total Usage")
+	TABLE_COLORS=("$CYAN" "$YELLOW")
+	for i in "${!RESULTS[@]}"; do
+		TABLE_DATA=("$((i + 1))" "$(echo "${RESULTS[i]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/')")
+		render_table TABLE_DATA[@] TABLE_HEADERS[@] TABLE_COLORS[@]
+		echo -e "${GREEN}${DIVIDER}${RESET}"
+	done
 }
 
 get_usage_data $1
@@ -170,7 +176,13 @@ function get_today_usage_data() {
 		fi
 	done
 
-	echo "${RESULTS[@]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/'
+	TABLE_HEADERS=("API Key No." "Today's Usage")
+	TABLE_COLORS=("$CYAN" "$YELLOW")
+	for i in "${!RESULTS[@]}"; do
+		TABLE_DATA=("$((i + 1))" "$(echo "${RESULTS[i]}" | grep -oE "\"total_usage\": ([^,]*|\"[^\"]*\")" | cut -d' ' -f2- | awk '{printf "%.2f$ ", $1/100}' | sed 's/ $/\n/')")
+		render_table TABLE_DATA[@] TABLE_HEADERS[@] TABLE_COLORS[@]
+		echo -e "${GREEN}${DIVIDER}${RESET}"
+	done
 }
 
 get_today_usage_data $1
