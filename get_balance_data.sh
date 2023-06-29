@@ -202,27 +202,30 @@ function check_gpt4_support() {
 	TABLE_HEADERS=("API Key No." "GPT-4 Support")
 	TABLE_COLORS=("$CYAN" "$YELLOW")
 	for i in "${!API_KEY_ARRAY[@]}"; do
-		API_KEY=${API_KEY_ARRAY[i]}
-		URL="https://api.openai.com/v1/models/gpt-4"
-		CONTENT_TYPE="Content-Type: application/json"
-		AUTHORIZATION="Authorization: Bearer $API_KEY"
+		(
+			API_KEY=${API_KEY_ARRAY[i]}
+			URL="https://api.openai.com/v1/models/gpt-4"
+			CONTENT_TYPE="Content-Type: application/json"
+			AUTHORIZATION="Authorization: Bearer $API_KEY"
 
-		RESPONSE=$(curl -s -X GET -H "$CONTENT_TYPE" -H "$AUTHORIZATION" $URL)
+			RESPONSE=$(curl -s -X GET -H "$CONTENT_TYPE" -H "$AUTHORIZATION" $URL)
 
-		if [ -z "$RESPONSE" ]; then
-			TABLE_DATA=("$((i + 1))" "Error")
-		else
-			ERROR_MESSAGE=$(echo "$RESPONSE" | grep -oE "\"error\": {" | cut -d' ' -f2-)
-			if [ -z "$ERROR_MESSAGE" ]; then
-				TABLE_DATA=("$((i + 1))" "Supported")
+			if [ -z "$RESPONSE" ]; then
+				TABLE_DATA=("$((i + 1))" "Error")
 			else
-				TABLE_DATA=("$((i + 1))" "Not Supported")
+				ERROR_MESSAGE=$(echo "$RESPONSE" | grep -oE "\"error\": {" | cut -d' ' -f2-)
+				if [ -z "$ERROR_MESSAGE" ]; then
+					TABLE_DATA=("$((i + 1))" "Supported")
+				else
+					TABLE_DATA=("$((i + 1))" "Not Supported")
+				fi
 			fi
-		fi
 
-		render_table TABLE_DATA[@] TABLE_HEADERS[@] TABLE_COLORS[@]
-		echo -e "${GREEN}${DIVIDER}${RESET}"
+			render_table TABLE_DATA[@] TABLE_HEADERS[@] TABLE_COLORS[@]
+			echo -e "${GREEN}${DIVIDER}${RESET}"
+		) &
 	done
+	wait
 }
 
 check_gpt4_support $1
