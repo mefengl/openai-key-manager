@@ -1,52 +1,53 @@
 #!/bin/bash
 
+# Function to send a GET request to a URL using the provided API key
 function request_data() {
-	API_KEY=$1
-	URL=$2
-	RESPONSE=$(curl -s -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $API_KEY" $URL)
+	RESPONSE=$(curl -s -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $1" $2)
 	echo "$RESPONSE"
 }
 
-function process_keys() {
-	API_KEYS=$1
-	IFS=',' read -ra API_KEY_ARRAY <<<"$API_KEYS"
-
-	for i in "${!API_KEY_ARRAY[@]}"; do
-		API_KEY=${API_KEY_ARRAY[i]}
-		echo "Processing API Key $((i + 1))..."
-
-		# Balance Data
-		BALANCE_DATA=$(request_data "$API_KEY" "https://api.openai.com/v1/dashboard/billing/subscription")
-		ACCOUNT_NAME=$(echo "$BALANCE_DATA" | grep -oE "\"account_name\": \"[^\"]*\"" | cut -d' ' -f2-)
-		PLAN_ID=$(echo "$BALANCE_DATA" | grep -oE "\"id\": \"[^\"]*\"" | cut -d' ' -f2-)
-		echo "Account Name: $ACCOUNT_NAME"
-		echo "Plan ID: $PLAN_ID"
-
-		# Usage Data for the past 100 days
-		START_DATE=$(date -u -v-100d +"%Y-%m-%d")
-		END_DATE=$(date -u +"%Y-%m-%d")
-		USAGE_DATA=$(request_data "$API_KEY" "https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE")
-		TOTAL_USAGE=$(echo "$USAGE_DATA" | grep -oE "\"total_usage\": [^,]*" | cut -d' ' -f2-)
-		echo "Total Usage: $TOTAL_USAGE"
-
-		# Today's Usage Data
-		START_DATE=$(date -u +"%Y-%m-%d")
-		END_DATE=$(date -u -v+1d +"%Y-%m-%d")
-		TODAY_USAGE_DATA=$(request_data "$API_KEY" "https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE")
-		TODAY_USAGE=$(echo "$TODAY_USAGE_DATA" | grep -oE "\"total_usage\": [^,]*" | cut -d' ' -f2-)
-		echo "Today's Usage: $TODAY_USAGE"
-
-		# GPT-4 Support
-		GPT4_DATA=$(request_data "$API_KEY" "https://api.openai.com/v1/models/gpt-4")
-		GPT4_ERROR=$(echo "$GPT4_DATA" | grep -oE "\"error\": {" | cut -d' ' -f2-)
-		if [ -z "$GPT4_ERROR" ]; then
-			echo "GPT-4 Support: Supported"
-		else
-			echo "GPT-4 Support: Not Supported"
-		fi
-
-		echo "-------------------------"
-	done
+# Function to extract a specific value from a JSON response
+function extract_value() {
+	echo "$1" | grep -oE "\"$2\": [^,]*" | cut -d' ' -f2-
 }
 
+# Function to process each API key
+function process_keys() {
+	IFS=',' read -ra API_KEY_ARRAY <<<"$1"
+	for i in "${!API_KEY_ARRAY[@]}"; do
+		API_KEY=${API_KEY_ARRAY[i]}
+		# Printing a green divider line
+		echo -e "\033[32m$(printf '%*s' "$(tput cols)" '' | tr ' ' '=')\033[0m"
+		echo -e "API Key $((i + 1)): ${API_KEY:0:4}...${API_KEY: -4}"
+
+		# Requesting balance data and printing the required details
+		DATA=$(request_data "$API_KEY" "https://api.openai.com/v1/dashboard/billing/subscription")
+		echo "Account Name: $(extract_value "$DATA" "account_name")"
+		echo "Plan ID: $(extract_value "$DATA" "id")"
+		LIMIT=$(extract_value "$DATA" "soft_limit_usd")
+		echo "Limit (USD): $LIMIT"
+
+		# Requesting usage data for the past 100 days and printing the total usage and percentage
+		START_DATE=$(date -u -v-100d +"%Y-%m-%d")
+		END_DATE=$(date -u +"%Y-%m-%d")
+		DATA=$(request_data "$API_KEY" "https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE")
+		TOTAL_USAGE=$(extract_value "$DATA" "total_usage")
+		echo "Total Usage: $(echo "scale=2; $TOTAL_USAGE/100" | bc)"
+
+		# Requesting today's usage data and printing it
+		START_DATE=$(date -u +"%Y-%m-%d")
+		END_DATE=$(date -u -v+1d +"%Y-%m-%d")
+		DATA=$(request_data "$API_KEY" "https://api.openai.com/dashboard/billing/usage?start_date=$START_DATE&end_date=$END_DATE")
+		TODAY_USAGE=$(extract_value "$DATA" "total_usage")
+		echo "Today's Usage: $(echo "scale=2; $TODAY_USAGE/100" | bc)"
+
+		# Checking GPT-4 support and printing the result
+		DATA=$(request_data "$API_KEY" "https://api.openai.com/v1/models/gpt-4")
+		echo "GPT-4 Support: $(if echo "$DATA" | grep -qE "\"error\": {"; then echo "Not Supported"; else echo "Supported"; fi)"
+	done
+	# Printing a green divider line
+	echo -e "\033[32m$(printf '%*s' "$(tput cols)" '' | tr ' ' '=')\033[0m"
+}
+
+# Main execution
 process_keys $1
