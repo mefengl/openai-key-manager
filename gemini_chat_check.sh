@@ -22,7 +22,6 @@ for API_KEY in "${API_KEY_ARRAY[@]}"; do
     success=false
     for attempt in {1..2}; do
         RESPONSE=$(curl -s -X POST -H "$CONTENT_TYPE" -d "$DATA" $URL)
-        echo "Response: $RESPONSE"
         # Adjust error handling as per Gemini API response format
         ERROR_CODE=$(echo $RESPONSE | jq -r '.error.code')
         if [ "$ERROR_CODE" = "null" ] || [ -z "$ERROR_CODE" ]; then
